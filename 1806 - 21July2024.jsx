@@ -12,7 +12,7 @@ function Main() {
       return;
   }
   var splitChar = ";"; 
-  var sheetNumber = "4"; 
+  var sheetNumber = "5"; 
   var indexTableCSV = 0;
   var doc = app.activeDocument;
 
@@ -31,137 +31,175 @@ function Main() {
                  
                   if (table.rows.length > 0 && table.columns.length > 0) {
                      var firstCellContent = table.rows[0].cells[0].contents;
-                      if (firstCellContent != "Tabel" && firstCellContent != "Gambar") {
-                          firstCellContent = table.rows[3].cells[0].contents;
-                          tablesIndex.push({
-                              page: i + 1, 
-                              textFrameIndex: tf + 1, 
-                              tableIndex: j + 1, 
-                              table: table,
-                              firstCellContent: firstCellContent 
-                          });
-           
+                     var keywords = ["Tabel", "Gambar", "Jenis Kelamin", "Sex","Golongan", "Subsektor", "Kelompok"];
+
+                     function containsKeyword(content) {
+                         for (var i = 0; i < keywords.length; i++) {
+                             if (content.indexOf(keywords[i]) !== -1) {
+                                 return true;
+                             }
+                         }
+                         return false;
+                     }
+                     
+                     if (!containsKeyword(firstCellContent)) {
+                         firstCellContent = table.rows[3].cells[0].contents;
+                         tablesIndex.push({
+                             page: i + 1,
+                             textFrameIndex: tf + 1,
+                             tableIndex: j + 1,
+                             table: table,
+                             firstCellContent: firstCellContent
+                         });
+                     }
+                
                       }
                   }
               }
           }
       }
-  }
-  var dictKec = {
-    "1806010": "BUKIT KEMUNING",
-    "1806011": "ABUNG TINGGI",
-    "1806020": "TANJUNG RAJA",
-    "1806030": "ABUNG BARAT",
-    "1806031": "ABUNG TENGAH",
-    "1806032": "ABUNG KUNANG",
-    "1806033": "ABUNG PEKURUN",
-    "1806040": "KOTABUMI",
-    "1806041": "KOTABUMI UTARA",
-    "1806042": "KOTABUMI SELATAN",
-    "1806050": "ABUNG SELATAN",
-    "1806051": "ABUNG SEMULI",   
-    "1806052": "BLAMBANGAN PAGAR",
-    "1806060": "ABUNG TIMUR",
-    "1806061": "ABUNG SURAKARTA",
-    "1806070": "SUNGKAI SELATAN",
-    "1806071": "MUARA SUNGKAI",
-    "1806072": "BUNGA MAYANG",   
-    "1806073": "SUNGKAI  BARAT",
-    "1806074": "SUNGKAI JAYA",
-    "1806080": "SUNGKAI UTARA",
-    "1806081": "HULUSUNGKAI",
-    "1806082": "SUNGKAI TENGAH",
-    "1806" : "LAMPUNG UTARA"
-};
-alert("banyak file : "+ excelFiles.length);
-  for (var i = 0; i < excelFiles.length; i++) {
-    // alert("perulangan ke " + i);
-      var filePath = excelFiles[i].fsName;
-      var data = GetDataFromExcelPC(filePath, splitChar, sheetNumber);
-      var total = GetDataFromExcelPC(filePath, splitChar, 3);
+      //tablesIndex=tablesIndex.slice(89);
+      alert("banyak tabel di indesign : "+ tablesIndex.length);
       
-      var kabIndex = -1;
-        for (var k = 0; k < data[0].length; k++) {
-            if (data[0][k] === "kab") {
-                kabIndex = k;
-                break;
-            }
-        }
+  var dictKec = {
+    "1806010": "Bukit Kemuning",
+    "1806011": "Abung Tinggi",
+    "1806020": "Tanjung Raja",
+    "1806030": "Abung Barat",
+    "1806031": "Abung Tengah",
+    "1806032": "Abung Kunang",
+    "1806033": "Abung Pekurun",
+    "1806040": "Kotabumi",
+    "1806041": "Kotabumi Utara",
+    "1806042": "Kotabumi Selatan",
+    "1806050": "Abung Selatan",
+    "1806051": "Abung Semuli",   
+    "1806052": "Blambangan Pagar",
+    "1806060": "Abung Timur",
+    "1806061": "Abung Surakarta",
+    "1806070": "Sungkai Selatan",
+    "1806071": "Muara Sungkai",
+    "1806072": "Bunga Mayang",   
+    "1806073": "Sungkai Barat",
+    "1806074": "Sungkai Jaya",
+    "1806080": "Sungkai Utara",
+    "1806081": "Hulusungkai",
+    "1806082": "Sungkai Tengah",
+    "1806": "Lampung Utara"
+};
 
-        if (kabIndex === -1) {
-            alert("Kolom 'kab' tidak ditemukan. Silakan periksa kembali data header Anda.");
-            return; 
-        }
-
-        var totalIndex = -1;
-        for (var l = 0; l < total[0].length; l++) {
-            if (total[0][l] === "kab") {
-                totalIndex = l;
-                break;
-            }
-        }
-
-        if (totalIndex === -1) {
-            alert("Kolom 'kab' tidak ditemukan. Silakan periksa kembali data header Anda.");
-            return; 
-        }
-
-
-        var filteredData = [];
-        for (var m = 1; m < data.length; m++) { 
-            if (data[m][kabIndex] === "1806") {
-                filteredData.push(data[m]);
-            }
-        }
-
-
-        for (var n = 0; n < filteredData.length; n++) {
-            filteredData[n].splice(0, kabIndex + 1); 
-        }
-
-        if (filteredData.length > 0) {
-            var headers = [];
-            for (var o = 1; o <= filteredData[0].length; o++) {
-                headers.push("(" + o + ")");
-            }
-            filteredData.unshift(headers); 
-        }
-
-        var filteredTotal = [];
-        for (var p = 1; p < total.length; p++) { 
-            if (total[p][totalIndex] === "1806") {
-                filteredTotal.push(total[p]);
-            }
-        }
-
-
-
-        for (var q = 0; q < filteredTotal.length; q++) {
-            filteredTotal[q].splice(0, totalIndex ); 
-        }
-
-        // Rename column headers in the first row
-        if (filteredTotal.length > 0) {
-            var headers = [];
-            for (var r = 1; r <= filteredTotal[0].length; r++) {
-                headers.push("(" + r + ")");
-            }
-            filteredTotal.unshift(headers); 
-        }
-
-        filteredData.push(filteredTotal[1]);
-        for (var s = 0; s < filteredData.length; s++) {
-          var kode = filteredData[s][0]; 
-          if (dictKec[kode]) {
-              filteredData[s][0] = dictKec[kode]; 
-          }
+alert("banyak file : "+ excelFiles.length);
+for (var i = 0; i < excelFiles.length; i++) {
+  var filePath = excelFiles[i].fsName;
+  // alert(filePath);
+  var data = GetDataFromExcelPC(filePath, splitChar, sheetNumber);
+  var total = GetDataFromExcelPC(filePath, splitChar, 4);
+  
+  var kabIndex = -1;
+  for (var k = 0; k < data[0].length; k++) {
+      if (data[0][k] === "kab") {
+          kabIndex = k;
+          break;
       }
-            indexTableCSV = replaceTableColumnDataFromHeader(
-              filteredData,
-              indexTableCSV,
-              tablesIndex
-            )
+  }
+
+  if (kabIndex === -1) {
+      alert("Kolom 'kab' tidak ditemukan. Silakan periksa kembali data header Anda.");
+      return; 
+  }
+
+  var totalIndex = -1;
+  for (var l = 0; l < total[0].length; l++) {
+      if (total[0][l] === "kab") {
+          totalIndex = l;
+          break;
       }
+  }
+
+  if (totalIndex === -1) {
+      alert("Kolom 'kab' tidak ditemukan. Silakan periksa kembali data header Anda.");
+      return; 
+  }
+
+  var idKomoditasIndexData = -1;
+  for (var k = 0; k < data[0].length; k++) {
+      if (data[0][k] === "id_komoditas") {
+          idKomoditasIndexData = k;
+          break;
+      }
+  }
+  if (idKomoditasIndexData !== -1) {
+      for (var k = 0; k < data.length; k++) {
+          data[k].splice(idKomoditasIndexData, 1);
+      }
+  }
+
+  var idKomoditasIndexTotal = -1;
+  for (var l = 0; l < total[0].length; l++) {
+      if (total[0][l] === "id_komoditas") {
+          idKomoditasIndexTotal = l;
+          break;
+      }
+  }
+
+  if (idKomoditasIndexTotal !== -1) {
+      for (var l = 0; l < total.length; l++) {
+          total[l].splice(idKomoditasIndexTotal, 1);
+      }
+  }
+
+  var filteredData = [];
+  for (var m = 1; m < data.length; m++) { 
+      if (data[m][kabIndex] === "1806") {
+          filteredData.push(data[m]);
+      }
+  }
+
+  for (var n = 0; n < filteredData.length; n++) {
+      filteredData[n].splice(0, kabIndex + 1); 
+  }
+
+  if (filteredData.length > 0) {
+      var headers = [];
+      for (var o = 1; o <= filteredData[0].length; o++) {
+          headers.push("(" + o + ")");
+      }
+      filteredData.unshift(headers); 
+  }
+
+  var filteredTotal = [];
+  for (var p = 1; p < total.length; p++) { 
+      if (total[p][totalIndex] === "1806") {
+          filteredTotal.push(total[p]);
+      }
+  }
+
+  for (var q = 0; q < filteredTotal.length; q++) {
+      filteredTotal[q].splice(0, totalIndex); 
+  }
+
+  if (filteredTotal.length > 0) {
+      var headers = [];
+      for (var r = 1; r <= filteredTotal[0].length; r++) {
+          headers.push("(" + r + ")");
+      }
+      filteredTotal.unshift(headers); 
+  }
+
+  filteredData.push(filteredTotal[1]);
+  for (var s = 0; s < filteredData.length; s++) {
+      var kode = filteredData[s][0]; 
+      if (dictKec[kode]) {
+          filteredData[s][0] = dictKec[kode]; 
+      }
+  }
+  
+  indexTableCSV = replaceTableColumnDataFromHeader(
+      filteredData,
+      indexTableCSV,
+      tablesIndex
+  );
+}
     }
 
     function GetDataFromExcelPC(excelFilePath, splitChar, sheetNumber) {
@@ -242,7 +280,7 @@ function replaceTableColumnDataFromHeader(csvData, indexTable, tables) {
   }
   var lastChangedRow = -1;
   var searchText = csvData[0];
-  table.rows[0].cells[0].contents = "Kecamatan\rDistrict";
+  // table.rows[0].cells[0].contents = "Kecamatan\rDistrict";
 
   // alert("sekarang tabel ke - " + indexTable);
   var columnsProcessed = [];
@@ -261,15 +299,34 @@ function replaceTableColumnDataFromHeader(csvData, indexTable, tables) {
             for (var m = 3; m < table.rows.length; m++) {
               var csvIndex = m - 2;
               if (csvData[csvIndex] && csvData[csvIndex][k] !== undefined) {
-                table.rows[m].cells[j].contents = csvData[csvIndex][k];
-                if (j != 0) {
-                  var textObj = table.rows[m].cells[j].texts[0].paragraphs[0];
-                  textObj.justification = Justification.LEFT_ALIGN;
-                  textObj.justification = Justification.CENTER_ALIGN;
+              
+                var cellContent = csvData[csvIndex][k];
+                var normalizedContent = cellContent;
+                if (!isNaN(normalizedContent)) {
+                    var parts = normalizedContent.split('.');
+                    var integerPart = parts[0];
+                    var decimalPart = parts.length > 1 ? parts[1] : '';
+            
+                    integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                    cellContent = decimalPart ? integerPart + ',' + decimalPart : integerPart;
                 }
+                if(cellContent === "0" || cellContent ==="0,00"){
+                  cellContent = "-"
+                }
+                table.rows[m].cells[j].contents = cellContent;
+                
+                if (j != 0) {
+                    var textObj = table.rows[m].cells[j].texts[0].paragraphs[0];
+                    textObj.appliedParagraphStyle = app.activeDocument.paragraphStyles.itemByName("isi tabel");
+            
+                    textObj.justification = Justification.LEFT_ALIGN;
+                    textObj.justification = Justification.CENTER_ALIGN;
+                }
+                
                 lastChangedRow = Math.max(lastChangedRow, m);
-              }
             }
+            
+          }  
             columnsProcessed.push(k);
             break;
           }
@@ -286,14 +343,31 @@ function replaceTableColumnDataFromHeader(csvData, indexTable, tables) {
            for (var m = 2; m < table.rows.length; m++) {
              var csvIndex = m - 1;
              if (csvData[csvIndex] && csvData[csvIndex][k] !== undefined) {
-               table.rows[m].cells[j].contents = csvData[csvIndex][k];
-               if (j != 0) {
-                 var textObj = table.rows[m].cells[j].texts[0].paragraphs[0];
-                 textObj.justification = Justification.LEFT_ALIGN;
-                 textObj.justification = Justification.CENTER_ALIGN;
-               }
-               lastChangedRow = Math.max(lastChangedRow, m);
-             }
+              var cellContent = csvData[csvIndex][k];
+              var normalizedContent = cellContent;
+              if (!isNaN(normalizedContent)) {
+                  var parts = normalizedContent.split('.');
+                  var integerPart = parts[0];
+                  var decimalPart = parts.length > 1 ? parts[1] : '';
+          
+                  integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                  cellContent = decimalPart ? integerPart + ',' + decimalPart : integerPart;
+              }
+              if(cellContent === "0" || cellContent ==="0,00"){
+                cellContent = "-"
+              }
+              table.rows[m].cells[j].contents = cellContent;
+              
+              if (j != 0) {
+                  var textObj = table.rows[m].cells[j].texts[0].paragraphs[0];
+                  textObj.appliedParagraphStyle = app.activeDocument.paragraphStyles.itemByName("isi tabel");
+          
+                  textObj.justification = Justification.LEFT_ALIGN;
+                  textObj.justification = Justification.CENTER_ALIGN;
+              }
+              
+              lastChangedRow = Math.max(lastChangedRow, m);
+          }
            }
            columnsProcessed.push(k);
            break;
@@ -305,16 +379,13 @@ function replaceTableColumnDataFromHeader(csvData, indexTable, tables) {
   }
 
   updateTableFromCSV(headers, table);
-  // alert("columnsProcessed : " + columnsProcessed.length);
-  // alert("searchText : " + searchText.length);
 
   if (columnsProcessed.length < searchText.length) {
     for (var i = 0; i < csvData.length; i++) {
       remainingCSVData[i] = [];
-      // Always include the first column in the remaining data
       remainingCSVData[i].push(csvData[i][0]);
       for (var k = 0; k < searchText.length; k++) {
-        if (!contains(columnsProcessed, k) && k !== 0) { // Skip the first column
+        if (!contains(columnsProcessed, k) && k !== 0) {
           remainingCSVData[i].push(csvData[i][k]);
         }
       }
@@ -377,7 +448,18 @@ function changeRowColor(table, lastChangedRow) {
 
 function removeRowsAfter(table, lastChangedRow) {
   for (var m = table.rows.length - 1; m > lastChangedRow; m--) {
-    table.rows[m].remove();
+      table.rows[m].remove();
   }
+
+  // var lastRow = table.rows[lastChangedRow];
+  // if (lastRow) {
+  //     for (var i = 0; i < lastRow.cells.length; i++) {
+  //         var cell = lastRow.cells[i];
+  //         cell.contents = "";
+  //         cell.insertionPoints[0].appliedCharacterStyle = table.parent.appliedParagraphStyle;
+  //         cell.insertionPoints[0].fontStyle = "Bold";
+  //         cell.insertionPoints[0].contents = cell.contents;
+  //     }
+  // }
 }
 alert("Selesai.");
