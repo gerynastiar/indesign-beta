@@ -1,208 +1,209 @@
 Main();
+
 function Main() {
-  var folderPath = Folder.selectDialog("Pilih folder yang mengandung file Excel");
-  if (!folderPath) {
-      alert("Folder tidak dipilih.");
-      return;
-  }
-  var excelFiles = folderPath.getFiles("*.xlsx"); 
-  if (excelFiles.length === 0) {
-      alert(excelFiles.length);
-      alert("Tidak ada file Excel di folder yang dipilih.");
-      return;
-  }
-  var splitChar = ";"; 
-  var sheetNumber = "5"; 
-  var indexTableCSV = 0;
-  var doc = app.activeDocument;
+      showInitialDialog();
+      var folderPath = Folder.selectDialog("Pilih folder yang mengandung file Excel");
+      if (!folderPath) {
+          alert("Folder tidak dipilih.");
+          return;
+      }
+      var excelFiles = folderPath.getFiles("*.xlsx"); 
+      if (excelFiles.length === 0) {
+          alert(excelFiles.length);
+          alert("Tidak ada file Excel di folder yang dipilih.");
+          return;
+      }
+      var splitChar = ";"; 
+      var sheetNumber = "5"; 
+      var indexTableCSV = 0;
+      var doc = app.activeDocument;
 
-  var tablesIndex = []; 
-  
-  for (var i = 0; i < doc.pages.length; i++) {
-      var page = doc.pages[i];
-      var allTextFrames = page.textFrames.everyItem().getElements(); 
-  
-      for (var tf = 0; tf < allTextFrames.length; tf++) {
-          var textFrame = allTextFrames[tf];
-          if (textFrame.tables.length > 0) { 
-              var tables = textFrame.tables;
-              for (var j = 0; j < tables.length; j++) { 
-                  var table = tables[j];
-                 
-                  if (table.rows.length > 0 && table.columns.length > 0) {
-                     var firstCellContent = table.rows[0].cells[0].contents;
-                     var keywords = ["Tabel", "Gambar", "Jenis Kelamin", "Sex","Golongan", "Subsektor", "Kelompok"];
+      var tablesIndex = []; 
+      
+      for (var i = 0; i < doc.pages.length; i++) {
+          var page = doc.pages[i];
+          var allTextFrames = page.textFrames.everyItem().getElements(); 
+      
+          for (var tf = 0; tf < allTextFrames.length; tf++) {
+              var textFrame = allTextFrames[tf];
+              if (textFrame.tables.length > 0) { 
+                  var tables = textFrame.tables;
+                  for (var j = 0; j < tables.length; j++) { 
+                      var table = tables[j];
+                    
+                      if (table.rows.length > 0 && table.columns.length > 0) {
+                        var firstCellContent = table.rows[0].cells[0].contents;
+                        var keywords = ["Tabel", "Gambar", "Jenis Kelamin", "Sex","Golongan", "Subsektor", "Kelompok"];
 
-                     function containsKeyword(content) {
-                         for (var i = 0; i < keywords.length; i++) {
-                             if (content.indexOf(keywords[i]) !== -1) {
-                                 return true;
-                             }
-                         }
-                         return false;
-                     }
-                     
-                     if (!containsKeyword(firstCellContent)) {
-                         firstCellContent = table.rows[3].cells[0].contents;
-                         tablesIndex.push({
-                             page: i + 1,
-                             textFrameIndex: tf + 1,
-                             tableIndex: j + 1,
-                             table: table,
-                             firstCellContent: firstCellContent
-                         });
-                     }
-                
+                        function containsKeyword(content) {
+                            for (var i = 0; i < keywords.length; i++) {
+                                if (content.indexOf(keywords[i]) !== -1) {
+                                    return true;
+                                }
+                            }
+                            return false;
+                        }
+                        
+                        if (!containsKeyword(firstCellContent)) {
+                            firstCellContent = table.rows[3].cells[0].contents;
+                            tablesIndex.push({
+                                page: i + 1,
+                                textFrameIndex: tf + 1,
+                                tableIndex: j + 1,
+                                table: table,
+                                firstCellContent: firstCellContent
+                            });
+                        }
+                    
+                          }
                       }
                   }
               }
           }
-      }
-      //tablesIndex=tablesIndex.slice(89);
-      alert("banyak tabel di indesign : "+ tablesIndex.length);
+          //tablesIndex=tablesIndex.slice(89);
+          alert("banyak tabel di indesign : "+ tablesIndex.length);
+          
+      var dictKec = {
+        "1806010": "Bukit Kemuning",
+        "1806011": "Abung Tinggi",
+        "1806020": "Tanjung Raja",
+        "1806030": "Abung Barat",
+        "1806031": "Abung Tengah",
+        "1806032": "Abung Kunang",
+        "1806033": "Abung Pekurun",
+        "1806040": "Kotabumi",
+        "1806041": "Kotabumi Utara",
+        "1806042": "Kotabumi Selatan",
+        "1806050": "Abung Selatan",
+        "1806051": "Abung Semuli",   
+        "1806052": "Blambangan Pagar",
+        "1806060": "Abung Timur",
+        "1806061": "Abung Surakarta",
+        "1806070": "Sungkai Selatan",
+        "1806071": "Muara Sungkai",
+        "1806072": "Bunga Mayang",   
+        "1806073": "Sungkai Barat",
+        "1806074": "Sungkai Jaya",
+        "1806080": "Sungkai Utara",
+        "1806081": "Hulusungkai",
+        "1806082": "Sungkai Tengah",
+        "1806": "Lampung Utara"
+       };
+
+    alert("banyak file : "+ excelFiles.length);
+    for (var i = 0; i < excelFiles.length; i++) {
+      var filePath = excelFiles[i].fsName;
+      var data = GetDataFromExcelPC(filePath, splitChar, sheetNumber);
+      var total = GetDataFromExcelPC(filePath, splitChar, 4);
       
-  var dictKec = {
-    "1806010": "Bukit Kemuning",
-    "1806011": "Abung Tinggi",
-    "1806020": "Tanjung Raja",
-    "1806030": "Abung Barat",
-    "1806031": "Abung Tengah",
-    "1806032": "Abung Kunang",
-    "1806033": "Abung Pekurun",
-    "1806040": "Kotabumi",
-    "1806041": "Kotabumi Utara",
-    "1806042": "Kotabumi Selatan",
-    "1806050": "Abung Selatan",
-    "1806051": "Abung Semuli",   
-    "1806052": "Blambangan Pagar",
-    "1806060": "Abung Timur",
-    "1806061": "Abung Surakarta",
-    "1806070": "Sungkai Selatan",
-    "1806071": "Muara Sungkai",
-    "1806072": "Bunga Mayang",   
-    "1806073": "Sungkai Barat",
-    "1806074": "Sungkai Jaya",
-    "1806080": "Sungkai Utara",
-    "1806081": "Hulusungkai",
-    "1806082": "Sungkai Tengah",
-    "1806": "Lampung Utara"
-};
-
-alert("banyak file : "+ excelFiles.length);
-for (var i = 0; i < excelFiles.length; i++) {
-  var filePath = excelFiles[i].fsName;
-  // alert(filePath);
-  var data = GetDataFromExcelPC(filePath, splitChar, sheetNumber);
-  var total = GetDataFromExcelPC(filePath, splitChar, 4);
-  
-  var kabIndex = -1;
-  for (var k = 0; k < data[0].length; k++) {
-      if (data[0][k] === "kab") {
-          kabIndex = k;
-          break;
+      var kabIndex = -1;
+      for (var k = 0; k < data[0].length; k++) {
+          if (data[0][k] === "kab") {
+              kabIndex = k;
+              break;
+          }
       }
-  }
 
-  if (kabIndex === -1) {
-      alert("Kolom 'kab' tidak ditemukan. Silakan periksa kembali data header Anda.");
-      return; 
-  }
-
-  var totalIndex = -1;
-  for (var l = 0; l < total[0].length; l++) {
-      if (total[0][l] === "kab") {
-          totalIndex = l;
-          break;
+      if (kabIndex === -1) {
+          alert("Kolom 'kab' tidak ditemukan. Silakan periksa kembali data header Anda.");
+          return; 
       }
-  }
 
-  if (totalIndex === -1) {
-      alert("Kolom 'kab' tidak ditemukan. Silakan periksa kembali data header Anda.");
-      return; 
-  }
-
-  var idKomoditasIndexData = -1;
-  for (var k = 0; k < data[0].length; k++) {
-      if (data[0][k] === "id_komoditas") {
-          idKomoditasIndexData = k;
-          break;
+      var totalIndex = -1;
+      for (var l = 0; l < total[0].length; l++) {
+          if (total[0][l] === "kab") {
+              totalIndex = l;
+              break;
+          }
       }
-  }
-  if (idKomoditasIndexData !== -1) {
-      for (var k = 0; k < data.length; k++) {
-          data[k].splice(idKomoditasIndexData, 1);
+
+      if (totalIndex === -1) {
+          alert("Kolom 'kab' tidak ditemukan. Silakan periksa kembali data header Anda.");
+          return; 
       }
-  }
 
-  var idKomoditasIndexTotal = -1;
-  for (var l = 0; l < total[0].length; l++) {
-      if (total[0][l] === "id_komoditas") {
-          idKomoditasIndexTotal = l;
-          break;
+      var idKomoditasIndexData = -1;
+      for (var k = 0; k < data[0].length; k++) {
+          if (data[0][k] === "id_komoditas") {
+              idKomoditasIndexData = k;
+              break;
+          }
       }
-  }
-
-  if (idKomoditasIndexTotal !== -1) {
-      for (var l = 0; l < total.length; l++) {
-          total[l].splice(idKomoditasIndexTotal, 1);
+      if (idKomoditasIndexData !== -1) {
+          for (var k = 0; k < data.length; k++) {
+              data[k].splice(idKomoditasIndexData, 1);
+          }
       }
-  }
 
-  var filteredData = [];
-  for (var m = 1; m < data.length; m++) { 
-      if (data[m][kabIndex] === "1806") {
-          filteredData.push(data[m]);
+      var idKomoditasIndexTotal = -1;
+      for (var l = 0; l < total[0].length; l++) {
+          if (total[0][l] === "id_komoditas") {
+              idKomoditasIndexTotal = l;
+              break;
+          }
       }
-  }
 
-  for (var n = 0; n < filteredData.length; n++) {
-      filteredData[n].splice(0, kabIndex + 1); 
-  }
-
-  if (filteredData.length > 0) {
-      var headers = [];
-      for (var o = 1; o <= filteredData[0].length; o++) {
-          headers.push("(" + o + ")");
+      if (idKomoditasIndexTotal !== -1) {
+          for (var l = 0; l < total.length; l++) {
+              total[l].splice(idKomoditasIndexTotal, 1);
+          }
       }
-      filteredData.unshift(headers); 
-  }
 
-  var filteredTotal = [];
-  for (var p = 1; p < total.length; p++) { 
-      if (total[p][totalIndex] === "1806") {
-          filteredTotal.push(total[p]);
+      var filteredData = [];
+      for (var m = 1; m < data.length; m++) { 
+          if (data[m][kabIndex] === "1806") {
+              filteredData.push(data[m]);
+          }
       }
-  }
 
-  for (var q = 0; q < filteredTotal.length; q++) {
-      filteredTotal[q].splice(0, totalIndex); 
-  }
-
-  if (filteredTotal.length > 0) {
-      var headers = [];
-      for (var r = 1; r <= filteredTotal[0].length; r++) {
-          headers.push("(" + r + ")");
+      for (var n = 0; n < filteredData.length; n++) {
+          filteredData[n].splice(0, kabIndex + 1); 
       }
-      filteredTotal.unshift(headers); 
-  }
 
-  filteredData.push(filteredTotal[1]);
-  for (var s = 0; s < filteredData.length; s++) {
-      var kode = filteredData[s][0]; 
-      if (dictKec[kode]) {
-          filteredData[s][0] = dictKec[kode]; 
+      if (filteredData.length > 0) {
+          var headers = [];
+          for (var o = 1; o <= filteredData[0].length; o++) {
+              headers.push("(" + o + ")");
+          }
+          filteredData.unshift(headers); 
       }
-  }
-  
-  indexTableCSV = replaceTableColumnDataFromHeader(
-      filteredData,
-      indexTableCSV,
-      tablesIndex
-  );
-}
+
+      var filteredTotal = [];
+      for (var p = 1; p < total.length; p++) { 
+          if (total[p][totalIndex] === "1806") {
+              filteredTotal.push(total[p]);
+          }
+      }
+
+      for (var q = 0; q < filteredTotal.length; q++) {
+          filteredTotal[q].splice(0, totalIndex); 
+      }
+
+      if (filteredTotal.length > 0) {
+          var headers = [];
+          for (var r = 1; r <= filteredTotal[0].length; r++) {
+              headers.push("(" + r + ")");
+          }
+          filteredTotal.unshift(headers); 
+      }
+
+      filteredData.push(filteredTotal[1]);
+      for (var s = 0; s < filteredData.length; s++) {
+          var kode = filteredData[s][0]; 
+          if (dictKec[kode]) {
+              filteredData[s][0] = dictKec[kode]; 
+          }
+      }
+      
+      indexTableCSV = replaceTableColumnDataFromHeader(
+          filteredData,
+          indexTableCSV,
+          tablesIndex
+      );
     }
+}
 
-    function GetDataFromExcelPC(excelFilePath, splitChar, sheetNumber) {
+function GetDataFromExcelPC(excelFilePath, splitChar, sheetNumber) {
     if (typeof splitChar === "undefined") var splitChar = ";";
     if (typeof sheetNumber === "undefined") var sheetNumber = "1";
     var appVersionNum = Number(String(app.version).split(".")[0]);
@@ -260,19 +261,26 @@ for (var i = 0; i < excelFiles.length; i++) {
     }
 
     return data;
-    }
+}
 
-    function contains(array, element) {
+function contains(array, element) {
       for (var i = 0; i < array.length; i++) {
         if (array[i] === element) {
           return true;
         }
       }
       return false;
-    }
+}
 
 function replaceTableColumnDataFromHeader(csvData, indexTable, tables) {
+  // progressInput(indexTable, tables.length);
   var table = tables[indexTable].table;
+  if (table.parent instanceof TextFrame) {
+    var textFrame = table.parent;
+    app.activeWindow.activePage = textFrame.parentPage;
+    app.activeWindow.zoom(ZoomOptions.FIT_PAGE);
+    table.cells[0].insertionPoints[0].select();
+  }
   if(table.rows[2].cells[0].contents==="(1)"){
      var headers = table.rows[2].cells;
   } else{
@@ -280,9 +288,7 @@ function replaceTableColumnDataFromHeader(csvData, indexTable, tables) {
   }
   var lastChangedRow = -1;
   var searchText = csvData[0];
-  // table.rows[0].cells[0].contents = "Kecamatan\rDistrict";
-
-  // alert("sekarang tabel ke - " + indexTable);
+  table.rows[0].cells[0].contents = "Kecamatan\rDistrict";
   var columnsProcessed = [];
   var remainingCSVData = [];
 
@@ -292,8 +298,6 @@ function replaceTableColumnDataFromHeader(csvData, indexTable, tables) {
       for (var j = 0; j < headers.length; j++) {
         var headerText = headers[j].contents;
         for (var k = 0; k < searchText.length; k++) {
-          // alert("header : "+ headerText);
-          // alert("search : " + searchText[k]);
           if (headerText == searchText[k]) {
 
             for (var m = 3; m < table.rows.length; m++) {
@@ -337,8 +341,6 @@ function replaceTableColumnDataFromHeader(csvData, indexTable, tables) {
      for (var j = 0; j < headers.length; j++) {
        var headerText = headers[j].contents;
        for (var k = 0; k < searchText.length; k++) {
-        // alert("header : "+ headerText);
-        // alert("search : " + searchText[k]);
          if (headerText == searchText[k]) {
            for (var m = 2; m < table.rows.length; m++) {
              var csvIndex = m - 1;
@@ -419,7 +421,7 @@ function contains(array, value) {
     }
   }
   return false;
-}
+  }
 
 
 function changeRowColor(table, lastChangedRow) {
@@ -450,16 +452,44 @@ function removeRowsAfter(table, lastChangedRow) {
   for (var m = table.rows.length - 1; m > lastChangedRow; m--) {
       table.rows[m].remove();
   }
-
-  // var lastRow = table.rows[lastChangedRow];
-  // if (lastRow) {
-  //     for (var i = 0; i < lastRow.cells.length; i++) {
-  //         var cell = lastRow.cells[i];
-  //         cell.contents = "";
-  //         cell.insertionPoints[0].appliedCharacterStyle = table.parent.appliedParagraphStyle;
-  //         cell.insertionPoints[0].fontStyle = "Bold";
-  //         cell.insertionPoints[0].contents = cell.contents;
-  //     }
-  // }
 }
+function showInitialDialog() {
+    var panelWidth = 800;
+    var initialDialog = new Window("dialog", "Automasi Input dari Excel ke Indesign", undefined, {resizeable: false});
+    initialDialog.orientation = "column";
+    initialDialog.alignChildren = ["center", "top"];
+    initialDialog.spacing = 10;
+    initialDialog.margins = 16;
+    var infoPanel = initialDialog.add("panel", undefined, "Brief Explanation");
+    infoPanel.orientation = "column";
+    infoPanel.alignChildren = ["left", "top"];
+    infoPanel.margins = 10;
+    infoPanel.spacing = 4;
+    infoPanel.preferredSize.width = panelWidth;
+    infoPanel.add("statictext", undefined, "Script ini dibuat untuk meningkatkan kolaborasi antar satker dalam menyusun publikasi");
+    var versiPanel = initialDialog.add("panel", undefined, "Versi");
+    versiPanel.orientation = "column";
+    versiPanel.alignChildren = ["left", "top"];
+    versiPanel.margins = 10;
+    versiPanel.preferredSize.width = panelWidth;
+
+    var versiGroup = versiPanel.add("group");
+    versiGroup.orientation = "column";
+    versiGroup.alignChildren = ["left", "top"];
+
+    versiGroup.add("statictext", undefined, "Developer : BPS Kabupaten Lampung Utara");
+    versiGroup.add("statictext", undefined, "Latest Version cek di github.com/gerynastiar");
+
+    var buttonGroup = initialDialog.add("group");
+    buttonGroup.orientation = "row";
+    buttonGroup.alignChildren = ["center", "center"];
+    buttonGroup.spacing = 10;
+
+    var okButton = buttonGroup.add("button", undefined, "Asiap Yay!");
+    okButton.onClick = function() {
+       initialDialog.close();
+    }
+    initialDialog.show();
+}
+
 alert("Selesai.");
